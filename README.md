@@ -5,7 +5,9 @@ audience (80s+) where **clarity and low cognitive load** matter most — usually
 family member (e.g. a daughter) for a parent or grandparent.
 
 - **One self-contained file** — `index.html`. No build step, no server, no account, no
-  password. Double-click it or host it anywhere; it works instantly.
+  password. Double-click it or host it anywhere; it works instantly. (A handful of sibling
+  files — `manifest.webmanifest`, `sw.js`, `icon-*.png` — add the optional "install as an app"
+  feature below; they're pure enhancement and the page works fine without them.)
 - **Local only** — every setting lives in `localStorage` (key `galt.launcher.v1`). Nothing
   leaves the device.
 - **Same Galt Software treatment** — cream paper (`#fffff1`) + black ink, the `GS` favicon
@@ -35,6 +37,22 @@ Kept intentionally short:
 
 All changes auto-save and apply immediately — there is no separate "save" step to forget. Seeds
 with **iHeartRadio** (`iheartradio.ca`) and **Pluto TV** (`pluto.tv`) on first run.
+
+## Install as an app (instead of a browser homepage)
+
+Browsers give web pages **no way to set themselves as the homepage** — it was a hijacking
+vector, so the old API was removed. The better fit is to **install** the launcher as a PWA: on a
+Chromebook it gets its own icon on the shelf and opens full-screen with no address bar, which is
+far easier for an 80-something to find than a homepage.
+
+- Open **Settings → Add to this device → Install Launcher**. (The button only appears when the
+  browser can actually install it.)
+- Requires the launcher to be **served over `https`** (e.g. the Cloudflare `/launcher/` path
+  below). On a double-clicked `file://` copy there's nothing to install, so the section stays
+  hidden — everything else still works.
+- The `sw.js` service worker also makes the launcher open **offline** after the first visit.
+- *Truly* automatic startup is only possible on a **managed Chromebook**, where an admin sets
+  `HomepageLocation` / `RestoreOnStartup` by policy in the Google Admin console.
 
 ## Accessibility notes
 

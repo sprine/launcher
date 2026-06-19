@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full-bleed black so the platform mask (circle / squircle) crops the background,
+       never the "GS". Glyph sits well inside the 80% maskable safe zone. -->
+  <rect width="512" height="512" fill="#000000"/>
+  <text x="256" y="264" text-anchor="middle" dominant-baseline="central"
+        font-family="Inter, system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif"
+        font-size="200" font-weight="600" letter-spacing="-8" fill="#fffff1">GS</text>
+</svg>

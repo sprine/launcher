@@ -9,6 +9,9 @@
     <meta name="apple-mobile-web-app-title" content="Launcher" />
     <meta name="description" content="Simple, clear buttons that open your favourite websites." />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <!-- Installable web app (works when hosted over https; ignored on file://). -->
+    <link rel="manifest" href="manifest.webmanifest" />
     <title>Launcher</title>
 
     <!-- Readable typefaces. "Clear" (Atkinson Hyperlegible) is the default — designed by the
@@ -336,6 +339,28 @@
       .done-btn:hover { background: #1a1a1a; }
       .done-btn:active { transform: translateY(1px); }
 
+      /* install (Add to this device) */
+      .install-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.1rem;
+        font-family: inherit;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--paper);
+        background: var(--ink);
+        border: 1.5px solid var(--ink);
+        border-radius: 0.7rem;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .install-btn:hover { background: #1a1a1a; }
+      .install-btn:active { transform: translateY(1px); }
+      .install-btn:disabled { opacity: 0.5; cursor: default; }
+      .install-btn svg { width: 1.1em; height: 1.1em; }
+      .install-note { font-size: 0.92rem; color: var(--muted); margin: 0; }
+
       @media (prefers-reduced-motion: reduce) {
         * { transition: none !important; }
       }
@@ -369,6 +394,16 @@
           <button class="icon-btn" id="closeSettings" aria-label="Close settings">
             <span class="ic" data-icon="close" aria-hidden="true"></span>
           </button>
+        </div>
+
+        <div class="section" id="installSection" hidden>
+          <h3>Add to this device</h3>
+          <p class="hint">Install Launcher so it opens like an app, with its own icon on the shelf.</p>
+          <button class="install-btn" id="installBtn" type="button" hidden>
+            <span class="ic" data-icon="download" aria-hidden="true"></span>
+            Install Launcher
+          </button>
+          <p class="install-note" id="installNote" hidden></p>
         </div>
 
         <div class="section">
@@ -419,6 +454,7 @@
         trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>',
         up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>',
         down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+        download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
       };
       function paintIcons(root) {
         (root || document).querySelectorAll(".ic[data-icon]").forEach((el) => {
@@ -582,6 +618,7 @@
 
       function openSettings() {
         renderSettings();
+        refreshInstallUI();
         overlay.classList.add("is-open");
         document.body.style.overflow = "hidden";
       }
@@ -676,6 +713,78 @@
         save(); renderSettings();
         const rows = document.querySelectorAll("#sites .site-row .f-name");
         if (rows.length) rows[rows.length - 1].focus();
+      }
+
+      // ---------------------------------------------------------------- install (PWA)
+      // A caregiver can turn the launcher into a real installed app — its own icon on
+      // the Chromebook shelf, opening full-screen with no address bar to get lost in.
+      let deferredInstall = null;
+      const installSection = document.getElementById("installSection");
+      const installBtn = document.getElementById("installBtn");
+      const installNote = document.getElementById("installNote");
+
+      function isStandalone() {
+        return window.matchMedia("(display-mode: standalone)").matches ||
+          window.navigator.standalone === true;
+      }
+
+      function refreshInstallUI() {
+        if (isStandalone()) { installSection.hidden = true; return; } // already installed
+
+        if (deferredInstall) {                                        // one-tap install ready
+          installSection.hidden = false;
+          installBtn.hidden = false;
+          installBtn.disabled = false;
+          installNote.hidden = true;
+          return;
+        }
+
+        // No automatic prompt. Install/offline need a secure (https) context, so on
+        // file:// there is genuinely nothing to install — stay quiet.
+        if (!window.isSecureContext) { installSection.hidden = true; return; }
+
+        // Otherwise fall back to a short, correct manual instruction.
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const chromium = "onbeforeinstallprompt" in window;
+        if (chromium || isIOS) {
+          installSection.hidden = false;
+          installBtn.hidden = true;
+          installNote.hidden = false;
+          installNote.textContent = isIOS
+            ? "In Safari, tap the Share button, then “Add to Home Screen”."
+            : "Open the browser menu (⋮) and choose “Install Launcher” to add it to your shelf.";
+        } else {
+          installSection.hidden = true;
+        }
+      }
+
+      installBtn.addEventListener("click", async () => {
+        const evt = deferredInstall;
+        if (!evt) return;
+        deferredInstall = null;        // the prompt can only be used once
+        installBtn.disabled = true;
+        evt.prompt();
+        let outcome = "dismissed";
+        try { ({ outcome } = await evt.userChoice); } catch (e) { /* ignore */ }
+        if (outcome === "accepted") installSection.hidden = true;
+        else refreshInstallUI();       // dropped back to the manual note
+      });
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();            // suppress the browser's own mini-infobar
+        deferredInstall = e;
+        if (overlay.classList.contains("is-open")) refreshInstallUI();
+      });
+      window.addEventListener("appinstalled", () => {
+        deferredInstall = null;
+        installSection.hidden = true;
+      });
+
+      // Register the service worker that makes the app installable + offline-capable.
+      if ("serviceWorker" in navigator && window.isSecureContext) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("sw.js").catch(() => { /* non-fatal */ });
+        });
       }
 
       // ---------------------------------------------------------------- wire up

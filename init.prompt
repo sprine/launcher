@@ -1,0 +1,12 @@
+Using the same UI/UX treatment as the projects in ../Galt Software. 
+This is a new thing called Launcher.
+It's designed for the elderly, and thus clarity and simplicity are highly important. 
+The audience of this tool will be in their 80s and octogenarians.
+The purpose of Launcher is to provide clear, simple buttons for the elderly user to select. These buttons will launch different websites.
+They should be customizable in font size via a setting, and the font should also be customizable to support dyslexia, dementia and other life-altering conditions, or simply preference. Keep the list short.
+Usually, someone else, perhaps their daughter, would be setting up the Launcher for their grandmother.
+The settings should have an ability to specify a list of websites - each of which will be clearly drawn on the main UI.
+Start with iheartradio.ca and plutoTV as the links, but make it easy to add more.
+Everything should run locally, using localstorage.
+No password or account required. It starts working instantly.
+Make it friendly for humans, and also mobile-friendly.

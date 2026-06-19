@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#fffff1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Launcher" />
+    <meta name="description" content="Simple, clear buttons that open your favourite websites." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <title>Launcher</title>
+
+    <!-- Readable typefaces. "Clear" (Atkinson Hyperlegible) is the default — designed by the
+         Braille Institute for low vision. "Classic" is Inter (the Galt Software brand face).
+         "Dyslexia-friendly" (OpenDyslexic) loads from a CDN with a graceful system fallback. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.cdnfonts.com/css/opendyslexic" rel="stylesheet" />
+
+    <style>
+      :root {
+        /* Brand palette — shared with the Galt Software brochure (cream paper, black ink). */
+        --paper: #fffff1;
+        --ink: #000000;
+        --muted: #555555;
+        --line: rgba(0, 0, 0, 0.22);
+        --line-soft: rgba(0, 0, 0, 0.12);
+
+        /* Caregiver-controlled, persisted to localStorage. */
+        --base: 24px;                       /* root size — the whole UI scales off this */
+        --ui-font: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      html { font-size: var(--base); }
+
+      body {
+        margin: 0;
+        min-height: 100svh;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--ui-font);
+        font-weight: 400;
+        line-height: 1.3;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        -webkit-tap-highlight-color: transparent;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ---------- top bar: quiet brand left, deliberate Settings button right ---------- */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 1.1rem;
+        max-width: 62rem;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      .brand { display: inline-flex; align-items: center; gap: 0.5rem; color: inherit; text-decoration: none; }
+      .brand img { height: 1.5rem; width: auto; display: block; }
+      .brand span {
+        font-family: "Inter", system-ui, sans-serif;
+        font-weight: 600;
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      /* Settings: small and cornered so it is hard to hit by accident, but clearly labelled. */
+      .settings-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: var(--paper);
+        color: var(--ink);
+        border: 1.5px solid var(--line);
+        border-radius: 999px;
+        padding: 0.4rem 0.85rem;
+        font-family: inherit;
+        font-size: 0.85rem;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .settings-btn svg { width: 1.05em; height: 1.05em; }
+      .settings-btn:hover { border-color: var(--ink); }
+      .settings-btn:active { transform: translateY(1px); }
+
+      /* ---------- main ---------- */
+      main {
+        flex: 1;
+        width: 100%;
+        max-width: 62rem;
+        margin: 0 auto;
+        padding: 0.5rem 1.1rem 2.5rem;
+      }
+
+      /* Orientation clock — gentle grounding for someone who may lose track of the day. */
+      .clock { text-align: center; margin: 0.5rem 0 1.75rem; }
+      .clock .time { font-size: 2.1rem; font-weight: 700; line-height: 1.1; }
+      .clock .day { font-size: 1.05rem; color: var(--muted); margin-top: 0.25rem; }
+
+      /* The buttons — the whole point. Big, obviously pressable cards. */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+        gap: 1.1rem;
+      }
+
+      .tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.85rem;
+        min-height: 9rem;
+        padding: 1.5rem 1.25rem;
+        background: var(--paper);
+        color: var(--ink);
+        border: 1.5px solid var(--line);
+        border-radius: 1.1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        text-decoration: none;
+        cursor: pointer;
+        touch-action: manipulation;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      }
+      .tile:hover { transform: translateY(-4px); box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16); border-color: var(--ink); }
+      .tile:active { transform: translateY(0) scale(0.98); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+      .tile:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+      .tile .icon {
+        width: 4.2rem;
+        height: 4.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+      .tile .icon img { width: 100%; height: 100%; object-fit: contain; }
+
+      /* Monogram fallback when a site has no fetchable favicon. */
+      .mono {
+        width: 100%;
+        height: 100%;
+        border-radius: 0.85rem;
+        background: var(--ink);
+        color: var(--paper);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 2rem;
+        text-transform: uppercase;
+        font-family: "Inter", system-ui, sans-serif;
+      }
+
+      .tile .label { font-size: 1.45rem; font-weight: 700; text-align: center; overflow-wrap: anywhere; }
+
+      /* Friendly empty state. */
+      .empty {
+        text-align: center;
+        color: var(--muted);
+        border: 1.5px dashed var(--line);
+        border-radius: 1.1rem;
+        padding: 2.5rem 1.5rem;
+        grid-column: 1 / -1;
+      }
+      .empty p { font-size: 1.2rem; margin: 0 0 1rem; }
+
+      /* ---------- settings overlay ---------- */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: rgba(0, 0, 0, 0.35);
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 1.25rem;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      .overlay.is-open { display: flex; }
+
+      .sheet {
+        background: var(--paper);
+        width: 100%;
+        max-width: 34rem;
+        border: 1px solid var(--line-soft);
+        border-radius: 1.1rem;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.2);
+        margin: auto;
+        padding: 1.4rem 1.5rem 1.75rem;
+      }
+
+      .sheet-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+      .sheet-head h2 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 999px;
+        border: 1.5px solid var(--line);
+        background: var(--paper);
+        color: var(--ink);
+        cursor: pointer;
+        flex: none;
+        touch-action: manipulation;
+      }
+      .icon-btn svg { width: 1.25em; height: 1.25em; }
+      .icon-btn:hover { border-color: var(--ink); }
+      .icon-btn:active { transform: translateY(1px); }
+      .icon-btn:disabled { opacity: 0.35; cursor: default; }
+
+      .section { padding: 1.1rem 0; border-top: 1px solid var(--line-soft); }
+      .section:first-of-type { border-top: none; }
+      .section > h3 { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.15rem; }
+      .section > .hint { font-size: 0.9rem; color: var(--muted); margin: 0 0 0.85rem; }
+
+      /* text size stepper */
+      .size-row { display: flex; align-items: center; gap: 1rem; }
+      .size-preview {
+        flex: 1;
+        text-align: center;
+        border: 1.5px solid var(--line-soft);
+        border-radius: 0.8rem;
+        padding: 0.6rem;
+        font-weight: 700;
+        line-height: 1;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      /* font chooser */
+      .fonts { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+      .font-chip {
+        flex: 1 1 9rem;
+        text-align: center;
+        padding: 0.7rem 0.6rem;
+        border: 1.5px solid var(--line);
+        border-radius: 0.8rem;
+        background: var(--paper);
+        color: var(--ink);
+        cursor: pointer;
+        font-size: 1.05rem;
+        touch-action: manipulation;
+      }
+      .font-chip small { display: block; font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+      .font-chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+      .font-chip[aria-pressed="true"] small { color: rgba(255, 255, 241, 0.75); }
+
+      /* website editor */
+      .sites { display: flex; flex-direction: column; gap: 0.75rem; }
+      .site-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas: "name reorder" "url remove";
+        gap: 0.5rem;
+        align-items: center;
+        padding: 0.75rem;
+        border: 1.5px solid var(--line-soft);
+        border-radius: 0.8rem;
+      }
+      .site-row .f-name { grid-area: name; }
+      .site-row .f-url { grid-area: url; }
+      .site-row .reorder { grid-area: reorder; display: flex; flex-direction: column; gap: 0.25rem; }
+      .site-row .remove { grid-area: remove; justify-self: end; }
+      .reorder .icon-btn, .remove.icon-btn { width: 2.1rem; height: 2.1rem; }
+
+      .field {
+        width: 100%;
+        padding: 0.6rem 0.7rem;
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--ink);
+        background: #fff;
+        border: 1.5px solid var(--line);
+        border-radius: 0.6rem;
+      }
+      .field::placeholder { color: #999; }
+      .field:focus { outline: none; border-color: var(--ink); }
+
+      .add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.9rem;
+        padding: 0.65rem 1rem;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 600;
+        border: 1.5px dashed var(--line);
+        border-radius: 0.7rem;
+        background: var(--paper);
+        color: var(--ink);
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .add-btn:hover { border-style: solid; border-color: var(--ink); }
+      .add-btn svg { width: 1.05em; height: 1.05em; }
+
+      .done-row { margin-top: 1.4rem; }
+      .done-btn {
+        width: 100%;
+        padding: 0.9rem;
+        font-family: inherit;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--paper);
+        background: var(--ink);
+        border: 1.5px solid var(--ink);
+        border-radius: 0.8rem;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .done-btn:hover { background: #1a1a1a; }
+      .done-btn:active { transform: translateY(1px); }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Launcher home">
+        <!-- <img src="favicon.svg" alt="" aria-hidden="true" /> -->
+        <span>Launcher</span>
+      </a>
+      <button class="settings-btn" id="openSettings" aria-haspopup="dialog">
+        <span class="ic" data-icon="gear" aria-hidden="true"></span>
+        Settings
+      </button>
+    </header>
+
+    <main>
+      <section class="clock" aria-live="off">
+        <div class="time" id="time">&nbsp;</div>
+        <div class="day" id="day">&nbsp;</div>
+      </section>
+      <section class="grid" id="grid" aria-label="Your websites"></section>
+    </main>
+
+    <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="sheet" role="document">
+        <div class="sheet-head">
+          <h2 id="settingsTitle">Settings</h2>
+          <button class="icon-btn" id="closeSettings" aria-label="Close settings">
+            <span class="ic" data-icon="close" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="section">
+          <h3>Text size</h3>
+          <p class="hint">Bigger text is easier to read.</p>
+          <div class="size-row">
+            <button class="icon-btn" id="sizeDown" aria-label="Smaller text">
+              <span class="ic" data-icon="minus" aria-hidden="true"></span>
+            </button>
+            <div class="size-preview" id="sizePreview">Aa</div>
+            <button class="icon-btn" id="sizeUp" aria-label="Bigger text">
+              <span class="ic" data-icon="plus" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Reading font</h3>
+          <p class="hint">Pick whichever is most comfortable to read.</p>
+          <div class="fonts" id="fonts" role="group" aria-label="Reading font"></div>
+        </div>
+
+        <div class="section">
+          <h3>Your websites</h3>
+          <p class="hint">Each one becomes a button on the home screen.</p>
+          <div class="sites" id="sites"></div>
+          <button class="add-btn" id="addSite">
+            <span class="ic" data-icon="plus" aria-hidden="true"></span>
+            Add a website
+          </button>
+        </div>
+
+        <div class="done-row">
+          <button class="done-btn" id="doneSettings">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      // ---------------------------------------------------------------- icons
+      const ICONS = {
+        gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+        close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>',
+        plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+        minus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+        trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>',
+        up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>',
+        down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+      };
+      function paintIcons(root) {
+        (root || document).querySelectorAll(".ic[data-icon]").forEach((el) => {
+          if (!el.dataset.painted) { el.innerHTML = ICONS[el.dataset.icon] || ""; el.dataset.painted = "1"; }
+        });
+      }
+
+      // ---------------------------------------------------------------- state
+      const KEY = "galt.launcher.v1";
+      const MIN_PX = 16, MAX_PX = 40, STEP_PX = 4;
+
+      const FONTS = {
+        clear: { label: "Clear", note: "easy on the eyes",
+          stack: '"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
+        dyslexia: { label: "Dyslexia-friendly", note: "weighted letters",
+          stack: '"OpenDyslexic", "Comic Sans MS", "Atkinson Hyperlegible", system-ui, sans-serif' },
+        classic: { label: "Classic", note: "plain and crisp",
+          stack: '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
+      };
+
+      function defaults() {
+        return {
+          fontPx: 24,
+          font: "clear",
+          sites: [
+            { id: newId(), name: "iHeartRadio", url: "https://www.iheartradio.ca/" },
+            { id: newId(), name: "Pluto TV", url: "https://pluto.tv/" },
+          ],
+        };
+      }
+
+      function newId() {
+        return (crypto.randomUUID && crypto.randomUUID()) || "s" + Math.random().toString(36).slice(2);
+      }
+
+      function load() {
+        try {
+          const raw = localStorage.getItem(KEY);
+          if (!raw) return defaults();
+          const v = JSON.parse(raw);
+          return {
+            fontPx: clampPx(Number(v.fontPx) || 24),
+            font: FONTS[v.font] ? v.font : "clear",
+            sites: Array.isArray(v.sites)
+              ? v.sites.map((s) => ({ id: s.id || newId(), name: String(s.name || ""), url: String(s.url || "") }))
+              : defaults().sites,
+          };
+        } catch (e) {
+          return defaults();
+        }
+      }
+
+      function save() {
+        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode, etc. */ }
+      }
+
+      let state = load();
+
+      // ---------------------------------------------------------------- helpers
+      function clampPx(px) {
+        px = Math.round(px / STEP_PX) * STEP_PX;
+        return Math.max(MIN_PX, Math.min(MAX_PX, px));
+      }
+
+      // Make a typed address safe & launchable. Returns "" if it can't be a web link.
+      function normalizeUrl(raw) {
+        let s = String(raw || "").trim();
+        if (!s) return "";
+        if (/^(javascript|data|vbscript|file):/i.test(s)) return "";
+        if (!/^https?:\/\//i.test(s)) s = "https://" + s.replace(/^\/+/, "");
+        try { return new URL(s).href; } catch (e) { return ""; }
+      }
+
+      function faviconUrl(url) {
+        try { return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(new URL(url).hostname) + "&sz=128"; }
+        catch (e) { return ""; }
+      }
+
+      function displayName(site) {
+        if (site.name.trim()) return site.name.trim();
+        try { return new URL(normalizeUrl(site.url)).hostname.replace(/^www\./, ""); } catch (e) { return "Website"; }
+      }
+
+      function el(tag, props, kids) {
+        const n = document.createElement(tag);
+        if (props) for (const k in props) {
+          if (k === "class") n.className = props[k];
+          else if (k === "html") n.innerHTML = props[k];
+          else if (k in n) n[k] = props[k];
+          else n.setAttribute(k, props[k]);
+        }
+        (kids || []).forEach((c) => n.appendChild(typeof c === "string" ? document.createTextNode(c) : c));
+        return n;
+      }
+
+      // ---------------------------------------------------------------- appearance
+      function applyAppearance() {
+        document.documentElement.style.setProperty("--base", state.fontPx + "px");
+        document.documentElement.style.setProperty("--ui-font", FONTS[state.font].stack);
+      }
+
+      // ---------------------------------------------------------------- home grid
+      function renderGrid() {
+        const grid = document.getElementById("grid");
+        grid.textContent = "";
+
+        const live = state.sites.filter((s) => normalizeUrl(s.url));
+        if (!live.length) {
+          const empty = el("div", { class: "empty" }, []);
+          empty.appendChild(el("p", {}, ["No buttons yet."]));
+          const btn = el("button", { class: "add-btn", type: "button" }, ["Open Settings to add a website"]);
+          btn.addEventListener("click", openSettings);
+          empty.appendChild(btn);
+          grid.appendChild(empty);
+          return;
+        }
+
+        live.forEach((site) => {
+          const href = normalizeUrl(site.url);
+          const tile = el("a", { class: "tile", href: href, "aria-label": displayName(site) }, []);
+
+          const icon = el("span", { class: "icon" }, []);
+          const fav = faviconUrl(href);
+          if (fav) {
+            const img = el("img", { src: fav, alt: "", loading: "lazy" }, []);
+            img.addEventListener("error", () => { icon.textContent = ""; icon.appendChild(monogram(displayName(site))); });
+            icon.appendChild(img);
+          } else {
+            icon.appendChild(monogram(displayName(site)));
+          }
+
+          tile.appendChild(icon);
+          tile.appendChild(el("span", { class: "label" }, [displayName(site)]));
+          grid.appendChild(tile);
+        });
+      }
+
+      function monogram(name) {
+        const m = el("span", { class: "mono", "aria-hidden": "true" }, [(name.trim()[0] || "?")]);
+        return m;
+      }
+
+      // ---------------------------------------------------------------- clock
+      function pad(n) { return n < 10 ? "0" + n : "" + n; }
+      function updateClock() {
+        const d = new Date();
+        let h = d.getHours();
+        const greet = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+        const ampm = h < 12 ? "AM" : "PM";
+        const h12 = ((h + 11) % 12) + 1;
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const months = ["January", "February", "March", "April", "May", "June", "July",
+          "August", "September", "October", "November", "December"];
+        document.getElementById("time").textContent = h12 + ":" + pad(d.getMinutes()) + " " + ampm;
+        document.getElementById("day").textContent =
+          greet + " · " + days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate();
+      }
+
+      // ---------------------------------------------------------------- settings
+      const overlay = document.getElementById("overlay");
+
+      function openSettings() {
+        renderSettings();
+        overlay.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+      }
+      function closeSettings() {
+        // Drop fully-blank rows the caregiver started but never filled in.
+        state.sites = state.sites.filter((s) => s.name.trim() || s.url.trim());
+        save();
+        renderGrid();
+        overlay.classList.remove("is-open");
+        document.body.style.overflow = "";
+      }
+
+      function renderSettings() {
+        // text size preview reflects the live size
+        document.getElementById("sizePreview").style.fontSize = state.fontPx + "px";
+        document.getElementById("sizeDown").disabled = state.fontPx <= MIN_PX;
+        document.getElementById("sizeUp").disabled = state.fontPx >= MAX_PX;
+
+        // font chips
+        const fonts = document.getElementById("fonts");
+        fonts.textContent = "";
+        Object.keys(FONTS).forEach((key) => {
+          const f = FONTS[key];
+          const chip = el("button", {
+            class: "font-chip", type: "button", "aria-pressed": String(state.font === key),
+            html: f.label + "<small>" + f.note + "</small>",
+          }, []);
+          chip.style.fontFamily = f.stack;
+          chip.addEventListener("click", () => {
+            state.font = key; applyAppearance(); save(); renderSettings();
+          });
+          fonts.appendChild(chip);
+        });
+
+        // website rows
+        const sites = document.getElementById("sites");
+        sites.textContent = "";
+        state.sites.forEach((site, i) => sites.appendChild(siteRow(site, i)));
+        paintIcons(overlay);
+      }
+
+      function siteRow(site, i) {
+        const row = el("div", { class: "site-row" }, []);
+
+        const name = el("input", { class: "field f-name", type: "text", value: site.name,
+          placeholder: "Name (e.g. iHeartRadio)", "aria-label": "Website name" }, []);
+        name.addEventListener("input", () => { site.name = name.value; save(); renderGrid(); });
+
+        const url = el("input", { class: "field f-url", type: "url", inputmode: "url",
+          autocapitalize: "off", autocorrect: "off", spellcheck: false, value: site.url,
+          placeholder: "Address (e.g. iheartradio.ca)", "aria-label": "Website address" }, []);
+        url.addEventListener("input", () => { site.url = url.value; save(); renderGrid(); });
+
+        const reorder = el("div", { class: "reorder" }, []);
+        const up = iconButton("up", "Move up", () => move(i, -1));
+        const down = iconButton("down", "Move down", () => move(i, 1));
+        up.disabled = i === 0;
+        down.disabled = i === state.sites.length - 1;
+        reorder.appendChild(up); reorder.appendChild(down);
+
+        const remove = iconButton("trash", "Remove " + displayName(site), () => {
+          state.sites.splice(i, 1); save(); renderGrid(); renderSettings();
+        });
+        remove.classList.add("remove");
+
+        row.appendChild(name); row.appendChild(url); row.appendChild(reorder); row.appendChild(remove);
+        return row;
+      }
+
+      function iconButton(icon, label, onClick) {
+        const b = el("button", { class: "icon-btn", type: "button", "aria-label": label,
+          html: '<span class="ic" data-icon="' + icon + '"></span>' }, []);
+        b.addEventListener("click", onClick);
+        return b;
+      }
+
+      function move(i, dir) {
+        const j = i + dir;
+        if (j < 0 || j >= state.sites.length) return;
+        const t = state.sites[i]; state.sites[i] = state.sites[j]; state.sites[j] = t;
+        save(); renderGrid(); renderSettings();
+      }
+
+      function changeSize(dir) {
+        state.fontPx = clampPx(state.fontPx + dir * STEP_PX);
+        applyAppearance(); save(); renderSettings();
+      }
+
+      function addSite() {
+        const s = { id: newId(), name: "", url: "" };
+        state.sites.push(s);
+        save(); renderSettings();
+        const rows = document.querySelectorAll("#sites .site-row .f-name");
+        if (rows.length) rows[rows.length - 1].focus();
+      }
+
+      // ---------------------------------------------------------------- wire up
+      document.getElementById("openSettings").addEventListener("click", openSettings);
+      document.getElementById("closeSettings").addEventListener("click", closeSettings);
+      document.getElementById("doneSettings").addEventListener("click", closeSettings);
+      document.getElementById("addSite").addEventListener("click", addSite);
+      document.getElementById("sizeUp").addEventListener("click", () => changeSize(1));
+      document.getElementById("sizeDown").addEventListener("click", () => changeSize(-1));
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) closeSettings(); });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && overlay.classList.contains("is-open")) closeSettings();
+      });
+
+      // ---------------------------------------------------------------- boot
+      paintIcons(document);
+      applyAppearance();
+      renderGrid();
+      updateClock();
+      setInterval(updateClock, 10000);
+    </script>
+  </body>
+</html>

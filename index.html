@@ -359,6 +359,22 @@
       .install-btn svg { width: 1.1em; height: 1.1em; }
       .install-note { font-size: 0.92rem; color: var(--muted); margin: 0; }
 
+      /* ---------- clock format: 12/24h segmented buttons ---------- */
+      .seg-options { display: flex; gap: 0.6rem; margin-top: 0.6rem; }
+      .seg-btn {
+        flex: 1;
+        padding: 0.7rem 0.6rem;
+        border: 1.5px solid var(--line);
+        border-radius: 0.8rem;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: inherit;
+        font-size: 1.05rem;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .seg-btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
       @media (prefers-reduced-motion: reduce) {
         * { transition: none !important; }
       }
@@ -367,13 +383,13 @@
 
   <body>
     <header class="topbar">
-      <a class="brand" href="index.html" aria-label="Launcher home">
+      <a class="brand" href="index.html" data-i18n-aria="home_label" aria-label="Launcher home">
         <!-- <img src="favicon.svg" alt="" aria-hidden="true" /> -->
         <span id="greeting">Good morning</span>
       </a>
       <button class="settings-btn" id="openSettings" aria-haspopup="dialog">
         <span class="ic" data-icon="gear" aria-hidden="true"></span>
-        Settings
+        <span data-i18n="settings">Settings</span>
       </button>
     </header>
 
@@ -382,60 +398,74 @@
         <div class="time" id="time">&nbsp;</div>
         <div class="day" id="day">&nbsp;</div>
       </section>
-      <section class="grid" id="grid" aria-label="Your websites"></section>
+      <section class="grid" id="grid" data-i18n-aria="sites_title" aria-label="Your websites"></section>
     </main>
 
     <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="sheet" role="document">
         <div class="sheet-head">
-          <h2 id="settingsTitle">Settings</h2>
-          <button class="icon-btn" id="closeSettings" aria-label="Close settings">
+          <h2 id="settingsTitle" data-i18n="settings">Settings</h2>
+          <button class="icon-btn" id="closeSettings" data-i18n-aria="close_settings" aria-label="Close settings">
             <span class="ic" data-icon="close" aria-hidden="true"></span>
           </button>
         </div>
 
         <div class="section" id="installSection" hidden>
-          <h3>Add to this device</h3>
-          <p class="hint">Install Launcher so it opens like an app, with its own icon on the shelf.</p>
+          <h3 data-i18n="install_title">Add to this device</h3>
+          <p class="hint" data-i18n="install_hint">Install Launcher so it opens like an app, with its own icon on the shelf.</p>
           <button class="install-btn" id="installBtn" type="button" hidden>
             <span class="ic" data-icon="download" aria-hidden="true"></span>
-            Install Launcher
+            <span data-i18n="install_btn">Install Launcher</span>
           </button>
           <p class="install-note" id="installNote" hidden></p>
         </div>
 
         <div class="section">
-          <h3>Text size</h3>
-          <p class="hint">Bigger text is easier to read.</p>
+          <h3 data-i18n="lang_title">Language</h3>
+          <p class="hint" data-i18n="lang_hint">Changes the greeting, the date, and these settings.</p>
+          <div class="fonts" id="langs" role="group" data-i18n-aria="lang_title" aria-label="Language"></div>
+        </div>
+
+        <div class="section">
+          <h3 data-i18n="textsize_title">Text size</h3>
+          <p class="hint" data-i18n="textsize_hint">Bigger text is easier to read.</p>
           <div class="size-row">
-            <button class="icon-btn" id="sizeDown" aria-label="Smaller text">
+            <button class="icon-btn" id="sizeDown" data-i18n-aria="smaller_text" aria-label="Smaller text">
               <span class="ic" data-icon="minus" aria-hidden="true"></span>
             </button>
             <div class="size-preview" id="sizePreview">Aa</div>
-            <button class="icon-btn" id="sizeUp" aria-label="Bigger text">
+            <button class="icon-btn" id="sizeUp" data-i18n-aria="bigger_text" aria-label="Bigger text">
               <span class="ic" data-icon="plus" aria-hidden="true"></span>
             </button>
           </div>
         </div>
 
         <div class="section">
-          <h3>Reading font</h3>
-          <p class="hint">Pick whichever is most comfortable to read.</p>
-          <div class="fonts" id="fonts" role="group" aria-label="Reading font"></div>
+          <h3 data-i18n="font_title">Reading font</h3>
+          <p class="hint" data-i18n="font_hint">Pick whichever is most comfortable to read.</p>
+          <div class="fonts" id="fonts" role="group" data-i18n-aria="font_title" aria-label="Reading font"></div>
         </div>
 
         <div class="section">
-          <h3>Your websites</h3>
-          <p class="hint">Each one becomes a button on the home screen.</p>
+          <h3 data-i18n="format_title">Clock format</h3>
+          <div class="seg-options" id="formatSeg" role="group" data-i18n-aria="format_title" aria-label="Clock format">
+            <button class="seg-btn" type="button" data-format="12h" data-i18n="format_12" aria-pressed="false">12-hour</button>
+            <button class="seg-btn" type="button" data-format="24h" data-i18n="format_24" aria-pressed="false">24-hour</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3 data-i18n="sites_title">Your websites</h3>
+          <p class="hint" data-i18n="sites_hint">Each one becomes a button on the home screen.</p>
           <div class="sites" id="sites"></div>
           <button class="add-btn" id="addSite">
             <span class="ic" data-icon="plus" aria-hidden="true"></span>
-            Add a website
+            <span data-i18n="add_site">Add a website</span>
           </button>
         </div>
 
         <div class="done-row">
-          <button class="done-btn" id="doneSettings">Done</button>
+          <button class="done-btn" id="doneSettings" data-i18n="done">Done</button>
         </div>
       </div>
     </div>
@@ -465,18 +495,378 @@
       const MIN_PX = 16, MAX_PX = 40, STEP_PX = 4;
 
       const FONTS = {
-        clear: { label: "Clear", note: "easy on the eyes",
-          stack: '"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
-        dyslexia: { label: "Dyslexia-friendly", note: "weighted letters",
-          stack: '"OpenDyslexic", "Comic Sans MS", "Atkinson Hyperlegible", system-ui, sans-serif' },
-        classic: { label: "Classic", note: "plain and crisp",
-          stack: '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
+        clear: { stack: '"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
+        dyslexia: { stack: '"OpenDyslexic", "Comic Sans MS", "Atkinson Hyperlegible", system-ui, sans-serif' },
+        classic: { stack: '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
       };
 
+      // Languages offered in Settings, listed by their own (endonym) names so anyone
+      // can spot their language even when the UI is currently in another one.
+      const LANGS = [
+        { code: "en", name: "English" },
+        { code: "fr", name: "Français" },
+        { code: "es", name: "Español" },
+        { code: "de", name: "Deutsch" },
+        { code: "it", name: "Italiano" },
+        { code: "pt", name: "Português" },
+        { code: "ru", name: "Русский" },
+        { code: "zh", name: "中文" },
+        { code: "hi", name: "हिन्दी" },
+        { code: "ar", name: "العربية" },
+      ];
+      const RTL = new Set(["ar"]);
+
+      // UI strings. The clock's day/month names come from Intl (see renderClock), so only
+      // the greeting and these settings labels need translating. Missing keys fall back to
+      // English, so a partial translation degrades gracefully rather than breaking.
+      const I18N = {
+        en: {
+          settings: "Settings",
+          install_title: "Add to this device",
+          install_hint: "Install Launcher so it opens like an app, with its own icon.",
+          install_btn: "Install Launcher",
+          install_ios: "In Safari, tap Share, then “Add to Home Screen”.",
+          install_chromium: "Open the browser menu (⋮) and choose “Install Launcher”.",
+          textsize_title: "Text size",
+          textsize_hint: "Bigger text is easier to read.",
+          font_title: "Reading font",
+          font_hint: "Pick whichever is most comfortable to read.",
+          font_clear: "Clear", font_clear_note: "easy on the eyes",
+          font_dyslexia: "Dyslexia-friendly", font_dyslexia_note: "weighted letters",
+          font_classic: "Classic", font_classic_note: "plain and crisp",
+          format_title: "Clock format",
+          format_12: "12-hour", format_24: "24-hour",
+          lang_title: "Language",
+          lang_hint: "Changes the greeting, the date, and these settings.",
+          sites_title: "Your websites",
+          sites_hint: "Each one becomes a button on the home screen.",
+          add_site: "Add a website",
+          done: "Done",
+          close_settings: "Close settings",
+          smaller_text: "Smaller text", bigger_text: "Bigger text",
+          move_up: "Move up", move_down: "Move down", remove: "Remove",
+          name_label: "Website name", url_label: "Website address",
+          name_ph: "Name (e.g. iHeartRadio)", url_ph: "Address (e.g. iheartradio.ca)",
+          empty_title: "No buttons yet.", empty_btn: "Open Settings to add a website",
+          home_label: "Launcher home",
+          greetMorning: "Good morning", greetAfternoon: "Good afternoon", greetEvening: "Good evening",
+        },
+        fr: {
+          settings: "Réglages",
+          install_title: "Ajouter à cet appareil",
+          install_hint: "Installez Launcher pour l’ouvrir comme une application, avec sa propre icône.",
+          install_btn: "Installer Launcher",
+          install_ios: "Dans Safari, touchez Partager, puis « Sur l’écran d’accueil ».",
+          install_chromium: "Ouvrez le menu du navigateur (⋮) et choisissez « Installer Launcher ».",
+          textsize_title: "Taille du texte",
+          textsize_hint: "Un texte plus grand est plus facile à lire.",
+          font_title: "Police de lecture",
+          font_hint: "Choisissez celle qui est la plus confortable à lire.",
+          font_clear: "Claire", font_clear_note: "douce pour les yeux",
+          font_dyslexia: "Adaptée à la dyslexie", font_dyslexia_note: "lettres lestées",
+          font_classic: "Classique", font_classic_note: "simple et nette",
+          format_title: "Format de l’heure",
+          format_12: "12 heures", format_24: "24 heures",
+          lang_title: "Langue",
+          lang_hint: "Change le message d’accueil, la date et ces réglages.",
+          sites_title: "Vos sites web",
+          sites_hint: "Chacun devient un bouton sur l’écran d’accueil.",
+          add_site: "Ajouter un site web",
+          done: "Terminé",
+          close_settings: "Fermer les réglages",
+          smaller_text: "Texte plus petit", bigger_text: "Texte plus grand",
+          move_up: "Monter", move_down: "Descendre", remove: "Supprimer",
+          name_label: "Nom du site", url_label: "Adresse du site",
+          name_ph: "Nom (ex. iHeartRadio)", url_ph: "Adresse (ex. iheartradio.ca)",
+          empty_title: "Aucun bouton pour l’instant.", empty_btn: "Ouvrez les réglages pour ajouter un site",
+          home_label: "Accueil Launcher",
+          greetMorning: "Bonjour", greetAfternoon: "Bon après-midi", greetEvening: "Bonsoir",
+        },
+        es: {
+          settings: "Ajustes",
+          install_title: "Añadir a este dispositivo",
+          install_hint: "Instala Launcher para abrirlo como una aplicación, con su propio icono.",
+          install_btn: "Instalar Launcher",
+          install_ios: "En Safari, toca Compartir y luego «Añadir a pantalla de inicio».",
+          install_chromium: "Abre el menú del navegador (⋮) y elige «Instalar Launcher».",
+          textsize_title: "Tamaño del texto",
+          textsize_hint: "Un texto más grande es más fácil de leer.",
+          font_title: "Fuente de lectura",
+          font_hint: "Elige la que te resulte más cómoda de leer.",
+          font_clear: "Clara", font_clear_note: "suave para la vista",
+          font_dyslexia: "Apta para dislexia", font_dyslexia_note: "letras con peso",
+          font_classic: "Clásica", font_classic_note: "sencilla y nítida",
+          format_title: "Formato de hora",
+          format_12: "12 horas", format_24: "24 horas",
+          lang_title: "Idioma",
+          lang_hint: "Cambia el saludo, la fecha y estos ajustes.",
+          sites_title: "Tus sitios web",
+          sites_hint: "Cada uno se convierte en un botón en la pantalla de inicio.",
+          add_site: "Añadir un sitio web",
+          done: "Listo",
+          close_settings: "Cerrar ajustes",
+          smaller_text: "Texto más pequeño", bigger_text: "Texto más grande",
+          move_up: "Subir", move_down: "Bajar", remove: "Eliminar",
+          name_label: "Nombre del sitio", url_label: "Dirección del sitio",
+          name_ph: "Nombre (p. ej. iHeartRadio)", url_ph: "Dirección (p. ej. iheartradio.ca)",
+          empty_title: "Aún no hay botones.", empty_btn: "Abre Ajustes para añadir un sitio",
+          home_label: "Inicio de Launcher",
+          greetMorning: "Buenos días", greetAfternoon: "Buenas tardes", greetEvening: "Buenas noches",
+        },
+        de: {
+          settings: "Einstellungen",
+          install_title: "Zu diesem Gerät hinzufügen",
+          install_hint: "Installiere Launcher, damit es wie eine App mit eigenem Symbol öffnet.",
+          install_btn: "Launcher installieren",
+          install_ios: "Tippe in Safari auf Teilen und dann „Zum Home-Bildschirm“.",
+          install_chromium: "Öffne das Browser-Menü (⋮) und wähle „Launcher installieren“.",
+          textsize_title: "Textgröße",
+          textsize_hint: "Größerer Text ist leichter zu lesen.",
+          font_title: "Leseschrift",
+          font_hint: "Wähle die für dich angenehmste Schrift.",
+          font_clear: "Klar", font_clear_note: "augenfreundlich",
+          font_dyslexia: "Legasthenie-freundlich", font_dyslexia_note: "betonte Buchstaben",
+          font_classic: "Klassisch", font_classic_note: "schlicht und scharf",
+          format_title: "Uhrzeitformat",
+          format_12: "12 Stunden", format_24: "24 Stunden",
+          lang_title: "Sprache",
+          lang_hint: "Ändert die Begrüßung, das Datum und diese Einstellungen.",
+          sites_title: "Deine Webseiten",
+          sites_hint: "Jede wird zu einer Schaltfläche auf dem Startbildschirm.",
+          add_site: "Webseite hinzufügen",
+          done: "Fertig",
+          close_settings: "Einstellungen schließen",
+          smaller_text: "Kleinerer Text", bigger_text: "Größerer Text",
+          move_up: "Nach oben", move_down: "Nach unten", remove: "Entfernen",
+          name_label: "Name der Webseite", url_label: "Adresse der Webseite",
+          name_ph: "Name (z. B. iHeartRadio)", url_ph: "Adresse (z. B. iheartradio.ca)",
+          empty_title: "Noch keine Schaltflächen.", empty_btn: "Öffne die Einstellungen, um eine Webseite hinzuzufügen",
+          home_label: "Launcher-Startseite",
+          greetMorning: "Guten Morgen", greetAfternoon: "Guten Tag", greetEvening: "Guten Abend",
+        },
+        it: {
+          settings: "Impostazioni",
+          install_title: "Aggiungi a questo dispositivo",
+          install_hint: "Installa Launcher per aprirlo come un’app, con la sua icona.",
+          install_btn: "Installa Launcher",
+          install_ios: "In Safari, tocca Condividi e poi «Aggiungi a Home».",
+          install_chromium: "Apri il menu del browser (⋮) e scegli «Installa Launcher».",
+          textsize_title: "Dimensione del testo",
+          textsize_hint: "Un testo più grande è più facile da leggere.",
+          font_title: "Carattere di lettura",
+          font_hint: "Scegli quello più comodo da leggere.",
+          font_clear: "Chiaro", font_clear_note: "riposante per gli occhi",
+          font_dyslexia: "Adatto alla dislessia", font_dyslexia_note: "lettere marcate",
+          font_classic: "Classico", font_classic_note: "semplice e nitido",
+          format_title: "Formato dell’ora",
+          format_12: "12 ore", format_24: "24 ore",
+          lang_title: "Lingua",
+          lang_hint: "Cambia il saluto, la data e queste impostazioni.",
+          sites_title: "I tuoi siti web",
+          sites_hint: "Ognuno diventa un pulsante nella schermata principale.",
+          add_site: "Aggiungi un sito web",
+          done: "Fatto",
+          close_settings: "Chiudi le impostazioni",
+          smaller_text: "Testo più piccolo", bigger_text: "Testo più grande",
+          move_up: "Sposta su", move_down: "Sposta giù", remove: "Rimuovi",
+          name_label: "Nome del sito", url_label: "Indirizzo del sito",
+          name_ph: "Nome (es. iHeartRadio)", url_ph: "Indirizzo (es. iheartradio.ca)",
+          empty_title: "Ancora nessun pulsante.", empty_btn: "Apri le impostazioni per aggiungere un sito",
+          home_label: "Home di Launcher",
+          greetMorning: "Buongiorno", greetAfternoon: "Buon pomeriggio", greetEvening: "Buonasera",
+        },
+        pt: {
+          settings: "Configurações",
+          install_title: "Adicionar a este dispositivo",
+          install_hint: "Instale o Launcher para abri-lo como um app, com seu próprio ícone.",
+          install_btn: "Instalar o Launcher",
+          install_ios: "No Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”.",
+          install_chromium: "Abra o menu do navegador (⋮) e escolha “Instalar o Launcher”.",
+          textsize_title: "Tamanho do texto",
+          textsize_hint: "Texto maior é mais fácil de ler.",
+          font_title: "Fonte de leitura",
+          font_hint: "Escolha a mais confortável de ler.",
+          font_clear: "Clara", font_clear_note: "suave para os olhos",
+          font_dyslexia: "Para dislexia", font_dyslexia_note: "letras reforçadas",
+          font_classic: "Clássica", font_classic_note: "simples e nítida",
+          format_title: "Formato da hora",
+          format_12: "12 horas", format_24: "24 horas",
+          lang_title: "Idioma",
+          lang_hint: "Altera a saudação, a data e estas configurações.",
+          sites_title: "Seus sites",
+          sites_hint: "Cada um vira um botão na tela inicial.",
+          add_site: "Adicionar um site",
+          done: "Concluído",
+          close_settings: "Fechar configurações",
+          smaller_text: "Texto menor", bigger_text: "Texto maior",
+          move_up: "Mover para cima", move_down: "Mover para baixo", remove: "Remover",
+          name_label: "Nome do site", url_label: "Endereço do site",
+          name_ph: "Nome (ex.: iHeartRadio)", url_ph: "Endereço (ex.: iheartradio.ca)",
+          empty_title: "Ainda não há botões.", empty_btn: "Abra as configurações para adicionar um site",
+          home_label: "Início do Launcher",
+          greetMorning: "Bom dia", greetAfternoon: "Boa tarde", greetEvening: "Boa noite",
+        },
+        ru: {
+          settings: "Настройки",
+          install_title: "Добавить на это устройство",
+          install_hint: "Установите Launcher, чтобы он открывался как приложение со своим значком.",
+          install_btn: "Установить Launcher",
+          install_ios: "В Safari нажмите «Поделиться», затем «На экран „Домой“».",
+          install_chromium: "Откройте меню браузера (⋮) и выберите «Установить Launcher».",
+          textsize_title: "Размер текста",
+          textsize_hint: "Крупный текст легче читать.",
+          font_title: "Шрифт для чтения",
+          font_hint: "Выберите самый удобный для чтения.",
+          font_clear: "Чёткий", font_clear_note: "приятный для глаз",
+          font_dyslexia: "Для дислексии", font_dyslexia_note: "утяжелённые буквы",
+          font_classic: "Классический", font_classic_note: "простой и чёткий",
+          format_title: "Формат времени",
+          format_12: "12 часов", format_24: "24 часа",
+          lang_title: "Язык",
+          lang_hint: "Меняет приветствие, дату и эти настройки.",
+          sites_title: "Ваши сайты",
+          sites_hint: "Каждый становится кнопкой на главном экране.",
+          add_site: "Добавить сайт",
+          done: "Готово",
+          close_settings: "Закрыть настройки",
+          smaller_text: "Меньше текст", bigger_text: "Больше текст",
+          move_up: "Вверх", move_down: "Вниз", remove: "Удалить",
+          name_label: "Название сайта", url_label: "Адрес сайта",
+          name_ph: "Название (напр. iHeartRadio)", url_ph: "Адрес (напр. iheartradio.ca)",
+          empty_title: "Кнопок пока нет.", empty_btn: "Откройте настройки, чтобы добавить сайт",
+          home_label: "Главная Launcher",
+          greetMorning: "Доброе утро", greetAfternoon: "Добрый день", greetEvening: "Добрый вечер",
+        },
+        zh: {
+          settings: "设置",
+          install_title: "添加到本设备",
+          install_hint: "安装 Launcher，让它像应用一样打开，并拥有自己的图标。",
+          install_btn: "安装 Launcher",
+          install_ios: "在 Safari 中，点按“分享”，然后选择“添加到主屏幕”。",
+          install_chromium: "打开浏览器菜单 (⋮)，选择“安装 Launcher”。",
+          textsize_title: "文字大小",
+          textsize_hint: "文字越大越容易阅读。",
+          font_title: "阅读字体",
+          font_hint: "选择最易于阅读的字体。",
+          font_clear: "清晰", font_clear_note: "护眼",
+          font_dyslexia: "阅读障碍友好", font_dyslexia_note: "加重字形",
+          font_classic: "经典", font_classic_note: "简洁清晰",
+          format_title: "时间格式",
+          format_12: "12 小时制", format_24: "24 小时制",
+          lang_title: "语言",
+          lang_hint: "更改问候语、日期和这些设置。",
+          sites_title: "你的网站",
+          sites_hint: "每个网站都会成为主屏幕上的一个按钮。",
+          add_site: "添加网站",
+          done: "完成",
+          close_settings: "关闭设置",
+          smaller_text: "缩小文字", bigger_text: "放大文字",
+          move_up: "上移", move_down: "下移", remove: "移除",
+          name_label: "网站名称", url_label: "网站地址",
+          name_ph: "名称（例如 iHeartRadio）", url_ph: "地址（例如 iheartradio.ca）",
+          empty_title: "还没有按钮。", empty_btn: "打开设置以添加网站",
+          home_label: "Launcher 主页",
+          greetMorning: "早上好", greetAfternoon: "下午好", greetEvening: "晚上好",
+        },
+        hi: {
+          settings: "सेटिंग्स",
+          install_title: "इस डिवाइस में जोड़ें",
+          install_hint: "Launcher इंस्टॉल करें ताकि यह अपने आइकन के साथ ऐप की तरह खुले।",
+          install_btn: "Launcher इंस्टॉल करें",
+          install_ios: "Safari में शेयर पर टैप करें, फिर “Add to Home Screen” चुनें।",
+          install_chromium: "ब्राउज़र मेन्यू (⋮) खोलें और “Install Launcher” चुनें।",
+          textsize_title: "टेक्स्ट का आकार",
+          textsize_hint: "बड़ा टेक्स्ट पढ़ने में आसान होता है।",
+          font_title: "पढ़ने का फ़ॉन्ट",
+          font_hint: "जो पढ़ने में सबसे आरामदायक लगे उसे चुनें।",
+          font_clear: "स्पष्ट", font_clear_note: "आँखों के लिए आसान",
+          font_dyslexia: "डिस्लेक्सिया-अनुकूल", font_dyslexia_note: "भारी अक्षर",
+          font_classic: "क्लासिक", font_classic_note: "सरल और साफ़",
+          format_title: "समय प्रारूप",
+          format_12: "12 घंटे", format_24: "24 घंटे",
+          lang_title: "भाषा",
+          lang_hint: "अभिवादन, तारीख और ये सेटिंग्स बदलता है।",
+          sites_title: "आपकी वेबसाइटें",
+          sites_hint: "हर एक होम स्क्रीन पर एक बटन बन जाती है।",
+          add_site: "वेबसाइट जोड़ें",
+          done: "हो गया",
+          close_settings: "सेटिंग्स बंद करें",
+          smaller_text: "छोटा टेक्स्ट", bigger_text: "बड़ा टेक्स्ट",
+          move_up: "ऊपर ले जाएँ", move_down: "नीचे ले जाएँ", remove: "हटाएँ",
+          name_label: "वेबसाइट का नाम", url_label: "वेबसाइट का पता",
+          name_ph: "नाम (जैसे iHeartRadio)", url_ph: "पता (जैसे iheartradio.ca)",
+          empty_title: "अभी कोई बटन नहीं है।", empty_btn: "वेबसाइट जोड़ने के लिए सेटिंग्स खोलें",
+          home_label: "Launcher होम",
+          greetMorning: "सुप्रभात", greetAfternoon: "नमस्कार", greetEvening: "शुभ संध्या",
+        },
+        ar: {
+          settings: "الإعدادات",
+          install_title: "أضِف إلى هذا الجهاز",
+          install_hint: "ثبِّت Launcher ليُفتح كتطبيق له أيقونته الخاصة.",
+          install_btn: "تثبيت Launcher",
+          install_ios: "في Safari، انقر على مشاركة ثم «أضف إلى الشاشة الرئيسية».",
+          install_chromium: "افتح قائمة المتصفح (⋮) واختر «تثبيت Launcher».",
+          textsize_title: "حجم النص",
+          textsize_hint: "النص الأكبر أسهل في القراءة.",
+          font_title: "خط القراءة",
+          font_hint: "اختر الأنسب لك للقراءة.",
+          font_clear: "واضح", font_clear_note: "مريح للعين",
+          font_dyslexia: "مناسب لعسر القراءة", font_dyslexia_note: "حروف مُثقَّلة",
+          font_classic: "كلاسيكي", font_classic_note: "بسيط وواضح",
+          format_title: "صيغة الوقت",
+          format_12: "12 ساعة", format_24: "24 ساعة",
+          lang_title: "اللغة",
+          lang_hint: "يغيّر التحية والتاريخ وهذه الإعدادات.",
+          sites_title: "مواقعك",
+          sites_hint: "كل موقع يصبح زرًّا على الشاشة الرئيسية.",
+          add_site: "أضِف موقعًا",
+          done: "تم",
+          close_settings: "إغلاق الإعدادات",
+          smaller_text: "نص أصغر", bigger_text: "نص أكبر",
+          move_up: "تحريك لأعلى", move_down: "تحريك لأسفل", remove: "إزالة",
+          name_label: "اسم الموقع", url_label: "عنوان الموقع",
+          name_ph: "الاسم (مثل iHeartRadio)", url_ph: "العنوان (مثل iheartradio.ca)",
+          empty_title: "لا توجد أزرار بعد.", empty_btn: "افتح الإعدادات لإضافة موقع",
+          home_label: "صفحة Launcher الرئيسية",
+          greetMorning: "صباح الخير", greetAfternoon: "طاب يومك", greetEvening: "مساء الخير",
+        },
+      };
+
+      function t(key) {
+        const dict = I18N[state.lang] || I18N.en;
+        const val = dict[key];
+        return val != null ? val : (I18N.en[key] != null ? I18N.en[key] : key);
+      }
+
+      // Pick the closest offered language to the device, falling back to English.
+      function detectLang() {
+        const cands = (navigator.languages && navigator.languages.length)
+          ? navigator.languages : [navigator.language || "en"];
+        for (const c of cands) {
+          const base = String(c).toLowerCase().split("-")[0];
+          if (I18N[base]) return base;
+        }
+        return "en";
+      }
+
+      // The device/locale convention (12h or 24h) becomes the initial clock format.
+      function defaultClockFormat(lang) {
+        try {
+          return new Intl.DateTimeFormat(lang, { hour: "numeric" }).resolvedOptions().hour12 ? "12h" : "24h";
+        } catch (e) { return "12h"; }
+      }
+
+      function esc(s) {
+        return String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+      }
+
       function defaults() {
+        const lang = detectLang();
         return {
           fontPx: 24,
           font: "clear",
+          lang: lang,
+          clockFormat: defaultClockFormat(lang),
           sites: [
             { id: newId(), name: "iHeartRadio", url: "https://www.iheartradio.ca/" },
             { id: newId(), name: "Pluto TV", url: "https://pluto.tv/" },
@@ -489,19 +879,22 @@
       }
 
       function load() {
+        const d = defaults();
         try {
           const raw = localStorage.getItem(KEY);
-          if (!raw) return defaults();
+          if (!raw) return d;
           const v = JSON.parse(raw);
           return {
             fontPx: clampPx(Number(v.fontPx) || 24),
             font: FONTS[v.font] ? v.font : "clear",
+            lang: I18N[v.lang] ? v.lang : d.lang,
+            clockFormat: (v.clockFormat === "12h" || v.clockFormat === "24h") ? v.clockFormat : d.clockFormat,
             sites: Array.isArray(v.sites)
               ? v.sites.map((s) => ({ id: s.id || newId(), name: String(s.name || ""), url: String(s.url || "") }))
-              : defaults().sites,
+              : d.sites,
           };
         } catch (e) {
-          return defaults();
+          return d;
         }
       }
 
@@ -554,6 +947,30 @@
         document.documentElement.style.setProperty("--ui-font", FONTS[state.font].stack);
       }
 
+      // ---------------------------------------------------------------- language
+      // Push the current language onto every translatable node. data-i18n sets text,
+      // data-i18n-aria sets the aria-label; dynamic parts call t() at render time.
+      function applyI18n() {
+        document.documentElement.lang = state.lang;
+        document.documentElement.dir = RTL.has(state.lang) ? "rtl" : "ltr";
+        document.querySelectorAll("[data-i18n]").forEach((node) => {
+          node.textContent = t(node.dataset.i18n);
+        });
+        document.querySelectorAll("[data-i18n-aria]").forEach((node) => {
+          node.setAttribute("aria-label", t(node.dataset.i18nAria));
+        });
+      }
+
+      function setLanguage(code) {
+        if (!I18N[code]) return;
+        state.lang = code;
+        save();
+        applyI18n();
+        renderSettings();   // re-localize chips, placeholders, aria
+        renderGrid();       // empty-state copy
+        renderClock();      // greeting + localized date
+      }
+
       // ---------------------------------------------------------------- home grid
       function renderGrid() {
         const grid = document.getElementById("grid");
@@ -562,8 +979,8 @@
         const live = state.sites.filter((s) => normalizeUrl(s.url));
         if (!live.length) {
           const empty = el("div", { class: "empty" }, []);
-          empty.appendChild(el("p", {}, ["No buttons yet."]));
-          const btn = el("button", { class: "add-btn", type: "button" }, ["Open Settings to add a website"]);
+          empty.appendChild(el("p", {}, [t("empty_title")]));
+          const btn = el("button", { class: "add-btn", type: "button" }, [t("empty_btn")]);
           btn.addEventListener("click", openSettings);
           empty.appendChild(btn);
           grid.appendChild(empty);
@@ -596,20 +1013,34 @@
       }
 
       // ---------------------------------------------------------------- clock
-      function pad(n) { return n < 10 ? "0" + n : "" + n; }
-      function updateClock() {
+      // Time and date are localized through Intl, so the chosen language drives the
+      // weekday/month names automatically.
+      function renderClock() {
         const d = new Date();
-        let h = d.getHours();
-        const greet = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
-        const ampm = h < 12 ? "AM" : "PM";
-        const h12 = ((h + 11) % 12) + 1;
-        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        const months = ["January", "February", "March", "April", "May", "June", "July",
-          "August", "September", "October", "November", "December"];
-        document.getElementById("greeting").textContent = greet;
-        document.getElementById("time").textContent = h12 + ":" + pad(d.getMinutes()) + " " + ampm;
-        document.getElementById("day").textContent =
-          days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate();
+        const locale = state.lang;
+        const is12h = state.clockFormat === "12h";
+
+        const h = d.getHours();
+        const gKey = h < 12 ? "greetMorning" : h < 18 ? "greetAfternoon" : "greetEvening";
+        document.getElementById("greeting").textContent = t(gKey);
+
+        try {
+          document.getElementById("time").textContent =
+            new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", hour12: is12h }).format(d);
+        } catch (e) {
+          document.getElementById("time").textContent =
+            d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+        }
+
+        // 12-hour shows a shorter date; 24-hour fills it out with the year.
+        const dateOpts = is12h
+          ? { weekday: "long", month: "long", day: "numeric" }
+          : { weekday: "long", day: "numeric", month: "long", year: "numeric" };
+        try {
+          document.getElementById("day").textContent = new Intl.DateTimeFormat(locale, dateOpts).format(d);
+        } catch (e) {
+          document.getElementById("day").textContent = d.toDateString();
+        }
       }
 
       // ---------------------------------------------------------------- settings
@@ -636,20 +1067,36 @@
         document.getElementById("sizeDown").disabled = state.fontPx <= MIN_PX;
         document.getElementById("sizeUp").disabled = state.fontPx >= MAX_PX;
 
+        // language chips (shown by endonym, so findable in any current language)
+        const langs = document.getElementById("langs");
+        langs.textContent = "";
+        LANGS.forEach((l) => {
+          const chip = el("button", {
+            class: "font-chip", type: "button", lang: l.code,
+            "aria-pressed": String(state.lang === l.code),
+          }, [l.name]);
+          chip.addEventListener("click", () => setLanguage(l.code));
+          langs.appendChild(chip);
+        });
+
         // font chips
         const fonts = document.getElementById("fonts");
         fonts.textContent = "";
         Object.keys(FONTS).forEach((key) => {
-          const f = FONTS[key];
           const chip = el("button", {
             class: "font-chip", type: "button", "aria-pressed": String(state.font === key),
-            html: f.label + "<small>" + f.note + "</small>",
+            html: esc(t("font_" + key)) + "<small>" + esc(t("font_" + key + "_note")) + "</small>",
           }, []);
-          chip.style.fontFamily = f.stack;
+          chip.style.fontFamily = FONTS[key].stack;
           chip.addEventListener("click", () => {
             state.font = key; applyAppearance(); save(); renderSettings();
           });
           fonts.appendChild(chip);
+        });
+
+        // clock format: reflect the current 12/24h choice on the segmented control
+        document.querySelectorAll("#formatSeg .seg-btn").forEach((b) => {
+          b.setAttribute("aria-pressed", String(b.dataset.format === state.clockFormat));
         });
 
         // website rows
@@ -663,22 +1110,22 @@
         const row = el("div", { class: "site-row" }, []);
 
         const name = el("input", { class: "field f-name", type: "text", value: site.name,
-          placeholder: "Name (e.g. iHeartRadio)", "aria-label": "Website name" }, []);
+          placeholder: t("name_ph"), "aria-label": t("name_label") }, []);
         name.addEventListener("input", () => { site.name = name.value; save(); renderGrid(); });
 
         const url = el("input", { class: "field f-url", type: "url", inputmode: "url",
           autocapitalize: "off", autocorrect: "off", spellcheck: false, value: site.url,
-          placeholder: "Address (e.g. iheartradio.ca)", "aria-label": "Website address" }, []);
+          placeholder: t("url_ph"), "aria-label": t("url_label") }, []);
         url.addEventListener("input", () => { site.url = url.value; save(); renderGrid(); });
 
         const reorder = el("div", { class: "reorder" }, []);
-        const up = iconButton("up", "Move up", () => move(i, -1));
-        const down = iconButton("down", "Move down", () => move(i, 1));
+        const up = iconButton("up", t("move_up"), () => move(i, -1));
+        const down = iconButton("down", t("move_down"), () => move(i, 1));
         up.disabled = i === 0;
         down.disabled = i === state.sites.length - 1;
         reorder.appendChild(up); reorder.appendChild(down);
 
-        const remove = iconButton("trash", "Remove " + displayName(site), () => {
+        const remove = iconButton("trash", t("remove") + " " + displayName(site), () => {
           state.sites.splice(i, 1); save(); renderGrid(); renderSettings();
         });
         remove.classList.add("remove");
@@ -749,9 +1196,7 @@
           installSection.hidden = false;
           installBtn.hidden = true;
           installNote.hidden = false;
-          installNote.textContent = isIOS
-            ? "In Safari, tap the Share button, then “Add to Home Screen”."
-            : "Open the browser menu (⋮) and choose “Install Launcher” to add it to your shelf.";
+          installNote.textContent = isIOS ? t("install_ios") : t("install_chromium");
         } else {
           installSection.hidden = true;
         }
@@ -793,6 +1238,16 @@
       document.getElementById("addSite").addEventListener("click", addSite);
       document.getElementById("sizeUp").addEventListener("click", () => changeSize(1));
       document.getElementById("sizeDown").addEventListener("click", () => changeSize(-1));
+
+      document.querySelectorAll("#formatSeg .seg-btn").forEach((b) => {
+        b.addEventListener("click", () => {
+          state.clockFormat = b.dataset.format;
+          save();
+          document.querySelectorAll("#formatSeg .seg-btn").forEach((x) =>
+            x.setAttribute("aria-pressed", String(x.dataset.format === state.clockFormat)));
+          renderClock();
+        });
+      });
       overlay.addEventListener("click", (e) => { if (e.target === overlay) closeSettings(); });
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && overlay.classList.contains("is-open")) closeSettings();
@@ -801,9 +1256,10 @@
       // ---------------------------------------------------------------- boot
       paintIcons(document);
       applyAppearance();
+      applyI18n();
       renderGrid();
-      updateClock();
-      setInterval(updateClock, 10000);
+      renderClock();
+      setInterval(renderClock, 10000);
     </script>
   </body>
 </html>

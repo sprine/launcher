@@ -75,10 +75,8 @@
       .brand span {
         font-family: "Inter", system-ui, sans-serif;
         font-weight: 600;
-        font-size: 0.8rem;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--muted);
+        font-size: 1.1rem;
+        color: var(--ink);
       }
 
       /* Settings: small and cornered so it is hard to hit by accident, but clearly labelled. */
@@ -371,7 +369,7 @@
     <header class="topbar">
       <a class="brand" href="index.html" aria-label="Launcher home">
         <!-- <img src="favicon.svg" alt="" aria-hidden="true" /> -->
-        <span>Launcher</span>
+        <span id="greeting">Good morning</span>
       </a>
       <button class="settings-btn" id="openSettings" aria-haspopup="dialog">
         <span class="ic" data-icon="gear" aria-hidden="true"></span>
@@ -608,9 +606,10 @@
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const months = ["January", "February", "March", "April", "May", "June", "July",
           "August", "September", "October", "November", "December"];
+        document.getElementById("greeting").textContent = greet;
         document.getElementById("time").textContent = h12 + ":" + pad(d.getMinutes()) + " " + ampm;
         document.getElementById("day").textContent =
-          greet + " · " + days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate();
+          days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate();
       }
 
       // ---------------------------------------------------------------- settings

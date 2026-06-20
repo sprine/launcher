@@ -180,6 +180,32 @@
       }
       .empty p { font-size: 1.2rem; margin: 0 0 1rem; }
 
+      /* iHeart radio embed tile — rendered in place of the link tile for /live/ station URLs */
+      .tile-radio {
+        background: var(--paper);
+        border: 1.5px solid var(--line);
+        border-radius: 1.1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+      }
+      .radio-head {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.85rem 1.25rem 0.6rem;
+      }
+      .radio-head .icon {
+        width: 2.2rem;
+        height: 2.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+      .radio-head .icon img { width: 100%; height: 100%; object-fit: contain; }
+      .radio-head .label { font-size: 1.2rem; font-weight: 700; }
+      .tile-radio iframe { display: block; width: 100%; border: none; }
+
       /* ---------- settings overlay ---------- */
       .overlay {
         position: fixed;
@@ -998,6 +1024,18 @@
         catch (e) { return ""; }
       }
 
+      // Returns the ?embed=true iframe src for iHeart live-station URLs, or null otherwise.
+      function iHeartEmbedUrl(url) {
+        try {
+          const u = new URL(url);
+          if (/^(www\.)?iheart\.com$/i.test(u.hostname) && /^\/live\//i.test(u.pathname)) {
+            const path = u.pathname.replace(/\/*$/, "/");
+            return "https://www.iheart.com" + path + "?embed=true";
+          }
+        } catch (e) {}
+        return null;
+      }
+
       function displayName(site) {
         if (site.name.trim()) return site.name.trim();
         try { return new URL(normalizeUrl(site.url)).hostname.replace(/^www\./, ""); } catch (e) { return "Website"; }
@@ -1063,21 +1101,31 @@
 
         live.forEach((site) => {
           const href = normalizeUrl(site.url);
-          const tile = el("a", { class: "tile", href: href, "aria-label": displayName(site) }, []);
+          const name = displayName(site);
+          const embedUrl = iHeartEmbedUrl(href);
 
           const icon = el("span", { class: "icon" }, []);
           const fav = faviconUrl(href);
           if (fav) {
             const img = el("img", { src: fav, alt: "", loading: "lazy" }, []);
-            img.addEventListener("error", () => { icon.textContent = ""; icon.appendChild(monogram(displayName(site))); });
+            img.addEventListener("error", () => { icon.textContent = ""; icon.appendChild(monogram(name)); });
             icon.appendChild(img);
           } else {
-            icon.appendChild(monogram(displayName(site)));
+            icon.appendChild(monogram(name));
           }
 
-          tile.appendChild(icon);
-          tile.appendChild(el("span", { class: "label" }, [displayName(site)]));
-          grid.appendChild(tile);
+          if (embedUrl) {
+            const radioTile = el("div", { class: "tile-radio" }, []);
+            radioTile.appendChild(el("div", { class: "radio-head" }, [icon, el("span", { class: "label" }, [name])]));
+            const frame = el("iframe", { src: embedUrl, allow: "autoplay", height: "200", frameborder: "0" }, []);
+            radioTile.appendChild(frame);
+            grid.appendChild(radioTile);
+          } else {
+            const tile = el("a", { class: "tile", href: href, "aria-label": name }, []);
+            tile.appendChild(icon);
+            tile.appendChild(el("span", { class: "label" }, [name]));
+            grid.appendChild(tile);
+          }
         });
       }
 

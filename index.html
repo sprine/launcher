@@ -423,6 +423,76 @@
       }
       .seg-btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
+      /* ---------- power button + off-state ---------- */
+      .topbar-right { display: inline-flex; align-items: center; gap: 0.6rem; }
+
+      .power-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 999px;
+        border: none;
+        background: var(--ink);
+        color: var(--paper);
+        cursor: pointer;
+        flex: none;
+        touch-action: manipulation;
+        box-shadow: 0 4px 0 #000, 0 5px 8px rgba(0,0,0,0.45);
+        transition: box-shadow 0.08s ease, transform 0.08s ease;
+      }
+      .power-btn svg { width: 1.3em; height: 1.3em; }
+      .power-btn:hover { background: #222; }
+      .power-btn:active {
+        transform: translateY(3px);
+        box-shadow: 0 1px 0 #000, 0 2px 4px rgba(0,0,0,0.35);
+      }
+
+      /* transitions for off/on fade */
+      body { transition: background 0.2s ease; }
+      header.topbar { transition: opacity 0.18s ease; }
+      #grid { transition: opacity 0.12s ease; }
+      .clock .time, .clock .day { transition: color 0.2s ease; }
+
+      /* invisible tap-to-wake layer — sits above content, below clock */
+      #powerOverlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: none;
+        user-select: none;
+      }
+
+      /* ripple that grows at the tap point while held — releases to wake */
+      #wakeRipple {
+        position: fixed;
+        width: 7rem;
+        height: 7rem;
+        border-radius: 50%;
+        background: rgba(255, 255, 241, 0.45);
+        transform: translate(-50%, -50%) scale(0);
+        pointer-events: none;
+        z-index: 60;
+      }
+      body:not(.is-off) #wakeRipple { display: none; }
+      #wakeRipple.is-active { animation: wake-grow 0.3s cubic-bezier(0.2, 0, 0.5, 1) forwards; }
+      @keyframes wake-grow {
+        from { transform: translate(-50%, -50%) scale(0); }
+        to   { transform: translate(-50%, -50%) scale(1); }
+      }
+
+      body.is-off { background: #000; }
+      body.is-off header.topbar { opacity: 0; pointer-events: none; }
+      body.is-off #grid { opacity: 0; pointer-events: none; }
+      body.is-off #powerOverlay { display: block; }
+      body.is-off .clock { position: relative; z-index: 55; }
+      body.is-off .clock .time { color: #fff; }
+      body.is-off .clock .day { color: rgba(255, 255, 241, 0.5); }
+
       @media (prefers-reduced-motion: reduce) {
         * { transition: none !important; }
       }
@@ -435,10 +505,15 @@
         <!-- <img src="favicon.svg" alt="" aria-hidden="true" /> -->
         <span id="greeting">Good morning</span>
       </a>
-      <button class="settings-btn" id="openSettings" aria-haspopup="dialog">
-        <span class="ic" data-icon="gear" aria-hidden="true"></span>
-        <span data-i18n="settings">Settings</span>
-      </button>
+      <div class="topbar-right">
+        <button class="settings-btn" id="openSettings" aria-haspopup="dialog">
+          <span class="ic" data-icon="gear" aria-hidden="true"></span>
+          <span data-i18n="settings">Settings</span>
+        </button>
+        <button class="power-btn" id="powerBtn" aria-label="Power off">
+          <span class="ic" data-icon="power" aria-hidden="true"></span>
+        </button>
+      </div>
     </header>
 
     <main>
@@ -560,6 +635,9 @@
       </div>
     </div>
 
+    <div id="powerOverlay" role="button" tabindex="0" aria-label="Tap anywhere to wake"></div>
+    <div id="wakeRipple" aria-hidden="true"></div>
+
     <script>
       "use strict";
 
@@ -573,6 +651,7 @@
         up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>',
         down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
         download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+        power: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>',
       };
       function paintIcons(root) {
         (root || document).querySelectorAll(".ic[data-icon]").forEach((el) => {
@@ -1372,7 +1451,47 @@
       });
       overlay.addEventListener("click", (e) => { if (e.target === overlay) closeSettings(); });
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && overlay.classList.contains("is-open")) closeSettings();
+        if (e.key === "Escape") {
+          if (overlay.classList.contains("is-open")) closeSettings();
+          else if (document.body.classList.contains("is-off")) powerOn();
+        }
+      });
+
+      // ---------------------------------------------------------------- power
+      function powerOff() {
+        if (overlay.classList.contains("is-open")) closeSettings();
+        document.body.classList.add("is-off");
+        document.getElementById("powerBtn").setAttribute("aria-label", "Power on");
+      }
+      function powerOn() {
+        document.body.classList.remove("is-off");
+        document.getElementById("powerBtn").setAttribute("aria-label", "Power off");
+      }
+      document.getElementById("powerBtn").addEventListener("click", () => {
+        if (document.body.classList.contains("is-off")) powerOn(); else powerOff();
+      });
+      const wakeRipple = document.getElementById("wakeRipple");
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const powerOverlay = document.getElementById("powerOverlay");
+      powerOverlay.addEventListener("pointerdown", (e) => {
+        powerOverlay.setPointerCapture(e.pointerId);
+        if (!prefersReducedMotion.matches) {
+          wakeRipple.style.left = e.clientX + "px";
+          wakeRipple.style.top = e.clientY + "px";
+          wakeRipple.classList.remove("is-active");
+          void wakeRipple.offsetWidth; // restart animation
+          wakeRipple.classList.add("is-active");
+        }
+      });
+      powerOverlay.addEventListener("pointerup", () => {
+        wakeRipple.classList.remove("is-active");
+        powerOn();
+      });
+      powerOverlay.addEventListener("pointercancel", () => {
+        wakeRipple.classList.remove("is-active");
+      });
+      powerOverlay.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); powerOn(); }
       });
 
       // ---------------------------------------------------------------- boot

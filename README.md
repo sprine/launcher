@@ -16,7 +16,9 @@ family member (e.g. a daughter) for a parent or grandparent.
 
 ## What's on screen
 
-- A grounding **clock + greeting** ("Good afternoon · Friday, June 19") at the top.
+- A warm **greeting in the header** ("Good afternoon", rolling over through the day) with a large
+  **clock and date** centred below it ("6:52 PM" over "Friday, June 19"). Both follow the chosen
+  language, formatted via `Intl`.
 - Big **website tiles**, each showing the site's real logo (favicon, fetched from Google's
   favicon service) with a black-on-cream letter monogram as the fallback. Tapping a tile opens
   that site in the same tab; the browser's back button returns to the Launcher.
@@ -24,14 +26,22 @@ family member (e.g. a daughter) for a parent or grandparent.
 
 ## Settings (the caregiver's panel)
 
-Kept intentionally short:
+Opened from the small, cornered **Settings** button. Each section is a **collapsible accordion** —
+the heading is the tappable summary, with a "Click to open / Click to close" hint and a chevron.
+Everything starts **collapsed except "Your websites"**, so the panel opens short and uncluttered.
 
-1. **Text size** — a `−` / `+` stepper, 16–40px, scales the *entire* UI live (everything is
+1. **Language** — 10 languages (English, Français, Español, Deutsch, Italiano, Português, Русский,
+   中文, हिन्दी, العربية), each listed by its own name. Picking one re-localizes the greeting, the
+   date, and the whole settings panel. Defaults to the device's language (falling back to English);
+   Arabic switches the page to right-to-left.
+2. **Text size** — a `−` / `+` stepper, 16–40px, scales the *entire* UI live (everything is
    `rem`-based off one root variable).
-2. **Reading font** — Clear (Atkinson Hyperlegible), Dyslexia-friendly (OpenDyslexic, loaded
+3. **Reading font** — Clear (Atkinson Hyperlegible), Dyslexia-friendly (OpenDyslexic, loaded
    from a CDN with a Comic Sans / system fallback), or Classic (Inter). Each chip previews its
    own face.
-3. **Your websites** — add / edit / reorder / remove. Name + address per row. A bare address
+4. **Clock format** — 12-hour ("6:52 PM") or 24-hour ("18:52"); the choice also adjusts the date
+   (24-hour adds the year). Defaults to the device/locale convention.
+5. **Your websites** — add / edit / reorder / remove. Name + address per row. A bare address
    like `iheartradio.ca` is auto-promoted to `https://`; `javascript:`/`data:`/`file:` URLs are
    rejected. Blank rows are pruned on close.
 
@@ -59,6 +69,8 @@ far easier for an 80-something to find than a homepage.
 - Maximum contrast (black on cream), large hit targets, visible 3px focus rings.
 - Pinch-zoom left enabled; `prefers-reduced-motion` disables transitions.
 - Tiles are real `<a href>` links, so they work even if the clock script fails.
+- Settings sections are native `<details>` accordions — fully keyboard-operable — and every label
+  (plus the greeting and date) is localized, with right-to-left layout for Arabic.
 
 ## Deploy (optional)
 

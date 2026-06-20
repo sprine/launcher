@@ -233,10 +233,32 @@
       .icon-btn:active { transform: translateY(1px); }
       .icon-btn:disabled { opacity: 0.35; cursor: default; }
 
-      .section { padding: 1.1rem 0; border-top: 1px solid var(--line-soft); }
+      .section { padding: 0.4rem 0; border-top: 1px solid var(--line-soft); }
       .section:first-of-type { border-top: none; }
-      .section > h3 { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.15rem; }
-      .section > .hint { font-size: 0.9rem; color: var(--muted); margin: 0 0 0.85rem; }
+      .section > .hint { font-size: 0.9rem; color: var(--muted); margin: 0.75rem 0 0.85rem; }
+
+      /* Each section is a collapsible <details>; its heading is the clickable summary. */
+      .sum {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.85rem 0;
+        cursor: pointer;
+        list-style: none;
+        touch-action: manipulation;
+      }
+      .sum::-webkit-details-marker { display: none; }
+      .sum:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 0.5rem; }
+      .sum-title { font-size: 1.25rem; font-weight: 700; }
+      .sum-aff { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); flex: none; }
+      .sum-hint { font-size: 0.9rem; }
+      .sum-chevron { display: inline-flex; transition: transform 0.15s ease; }
+      .sum-chevron svg { width: 1.3em; height: 1.3em; }
+      details[open] > .sum .sum-chevron { transform: rotate(180deg); }
+      .sum-close { display: none; }
+      details[open] > .sum .sum-open { display: none; }
+      details[open] > .sum .sum-close { display: inline; }
 
       /* text size stepper */
       .size-row { display: flex; align-items: center; gap: 1rem; }
@@ -410,24 +432,45 @@
           </button>
         </div>
 
-        <div class="section" id="installSection" hidden>
-          <h3 data-i18n="install_title">Add to this device</h3>
+        <details class="section" id="installSection" hidden>
+          <summary class="sum">
+            <span class="sum-title" data-i18n="install_title">Add to this device</span>
+            <span class="sum-aff">
+              <span class="sum-hint sum-open" data-i18n="hint_open">Click to open</span>
+              <span class="sum-hint sum-close" data-i18n="hint_close">Click to close</span>
+              <span class="ic sum-chevron" data-icon="down" aria-hidden="true"></span>
+            </span>
+          </summary>
           <p class="hint" data-i18n="install_hint">Install Launcher so it opens like an app, with its own icon on the shelf.</p>
           <button class="install-btn" id="installBtn" type="button" hidden>
             <span class="ic" data-icon="download" aria-hidden="true"></span>
             <span data-i18n="install_btn">Install Launcher</span>
           </button>
           <p class="install-note" id="installNote" hidden></p>
-        </div>
+        </details>
 
-        <div class="section">
-          <h3 data-i18n="lang_title">Language</h3>
+        <details class="section">
+          <summary class="sum">
+            <span class="sum-title" data-i18n="lang_title">Language</span>
+            <span class="sum-aff">
+              <span class="sum-hint sum-open" data-i18n="hint_open">Click to open</span>
+              <span class="sum-hint sum-close" data-i18n="hint_close">Click to close</span>
+              <span class="ic sum-chevron" data-icon="down" aria-hidden="true"></span>
+            </span>
+          </summary>
           <p class="hint" data-i18n="lang_hint">Changes the greeting, the date, and these settings.</p>
           <div class="fonts" id="langs" role="group" data-i18n-aria="lang_title" aria-label="Language"></div>
-        </div>
+        </details>
 
-        <div class="section">
-          <h3 data-i18n="textsize_title">Text size</h3>
+        <details class="section">
+          <summary class="sum">
+            <span class="sum-title" data-i18n="textsize_title">Text size</span>
+            <span class="sum-aff">
+              <span class="sum-hint sum-open" data-i18n="hint_open">Click to open</span>
+              <span class="sum-hint sum-close" data-i18n="hint_close">Click to close</span>
+              <span class="ic sum-chevron" data-icon="down" aria-hidden="true"></span>
+            </span>
+          </summary>
           <p class="hint" data-i18n="textsize_hint">Bigger text is easier to read.</p>
           <div class="size-row">
             <button class="icon-btn" id="sizeDown" data-i18n-aria="smaller_text" aria-label="Smaller text">
@@ -438,31 +481,52 @@
               <span class="ic" data-icon="plus" aria-hidden="true"></span>
             </button>
           </div>
-        </div>
+        </details>
 
-        <div class="section">
-          <h3 data-i18n="font_title">Reading font</h3>
+        <details class="section">
+          <summary class="sum">
+            <span class="sum-title" data-i18n="font_title">Reading font</span>
+            <span class="sum-aff">
+              <span class="sum-hint sum-open" data-i18n="hint_open">Click to open</span>
+              <span class="sum-hint sum-close" data-i18n="hint_close">Click to close</span>
+              <span class="ic sum-chevron" data-icon="down" aria-hidden="true"></span>
+            </span>
+          </summary>
           <p class="hint" data-i18n="font_hint">Pick whichever is most comfortable to read.</p>
           <div class="fonts" id="fonts" role="group" data-i18n-aria="font_title" aria-label="Reading font"></div>
-        </div>
+        </details>
 
-        <div class="section">
-          <h3 data-i18n="format_title">Clock format</h3>
+        <details class="section">
+          <summary class="sum">
+            <span class="sum-title" data-i18n="format_title">Clock format</span>
+            <span class="sum-aff">
+              <span class="sum-hint sum-open" data-i18n="hint_open">Click to open</span>
+              <span class="sum-hint sum-close" data-i18n="hint_close">Click to close</span>
+              <span class="ic sum-chevron" data-icon="down" aria-hidden="true"></span>
+            </span>
+          </summary>
           <div class="seg-options" id="formatSeg" role="group" data-i18n-aria="format_title" aria-label="Clock format">
             <button class="seg-btn" type="button" data-format="12h" data-i18n="format_12" aria-pressed="false">12-hour</button>
             <button class="seg-btn" type="button" data-format="24h" data-i18n="format_24" aria-pressed="false">24-hour</button>
           </div>
-        </div>
+        </details>
 
-        <div class="section">
-          <h3 data-i18n="sites_title">Your websites</h3>
+        <details class="section" open>
+          <summary class="sum">
+            <span class="sum-title" data-i18n="sites_title">Your websites</span>
+            <span class="sum-aff">
+              <span class="sum-hint sum-open" data-i18n="hint_open">Click to open</span>
+              <span class="sum-hint sum-close" data-i18n="hint_close">Click to close</span>
+              <span class="ic sum-chevron" data-icon="down" aria-hidden="true"></span>
+            </span>
+          </summary>
           <p class="hint" data-i18n="sites_hint">Each one becomes a button on the home screen.</p>
           <div class="sites" id="sites"></div>
           <button class="add-btn" id="addSite">
             <span class="ic" data-icon="plus" aria-hidden="true"></span>
             <span data-i18n="add_site">Add a website</span>
           </button>
-        </div>
+        </details>
 
         <div class="done-row">
           <button class="done-btn" id="doneSettings" data-i18n="done">Done</button>
@@ -522,6 +586,7 @@
       const I18N = {
         en: {
           settings: "Settings",
+          hint_open: "Click to open", hint_close: "Click to close",
           install_title: "Add to this device",
           install_hint: "Install Launcher so it opens like an app, with its own icon.",
           install_btn: "Install Launcher",
@@ -553,6 +618,7 @@
         },
         fr: {
           settings: "Réglages",
+          hint_open: "Cliquez pour ouvrir", hint_close: "Cliquez pour fermer",
           install_title: "Ajouter à cet appareil",
           install_hint: "Installez Launcher pour l’ouvrir comme une application, avec sa propre icône.",
           install_btn: "Installer Launcher",
@@ -584,6 +650,7 @@
         },
         es: {
           settings: "Ajustes",
+          hint_open: "Haz clic para abrir", hint_close: "Haz clic para cerrar",
           install_title: "Añadir a este dispositivo",
           install_hint: "Instala Launcher para abrirlo como una aplicación, con su propio icono.",
           install_btn: "Instalar Launcher",
@@ -615,6 +682,7 @@
         },
         de: {
           settings: "Einstellungen",
+          hint_open: "Zum Öffnen klicken", hint_close: "Zum Schließen klicken",
           install_title: "Zu diesem Gerät hinzufügen",
           install_hint: "Installiere Launcher, damit es wie eine App mit eigenem Symbol öffnet.",
           install_btn: "Launcher installieren",
@@ -646,6 +714,7 @@
         },
         it: {
           settings: "Impostazioni",
+          hint_open: "Clicca per aprire", hint_close: "Clicca per chiudere",
           install_title: "Aggiungi a questo dispositivo",
           install_hint: "Installa Launcher per aprirlo come un’app, con la sua icona.",
           install_btn: "Installa Launcher",
@@ -677,6 +746,7 @@
         },
         pt: {
           settings: "Configurações",
+          hint_open: "Clique para abrir", hint_close: "Clique para fechar",
           install_title: "Adicionar a este dispositivo",
           install_hint: "Instale o Launcher para abri-lo como um app, com seu próprio ícone.",
           install_btn: "Instalar o Launcher",
@@ -708,6 +778,7 @@
         },
         ru: {
           settings: "Настройки",
+          hint_open: "Нажмите, чтобы открыть", hint_close: "Нажмите, чтобы закрыть",
           install_title: "Добавить на это устройство",
           install_hint: "Установите Launcher, чтобы он открывался как приложение со своим значком.",
           install_btn: "Установить Launcher",
@@ -739,6 +810,7 @@
         },
         zh: {
           settings: "设置",
+          hint_open: "点击展开", hint_close: "点击收起",
           install_title: "添加到本设备",
           install_hint: "安装 Launcher，让它像应用一样打开，并拥有自己的图标。",
           install_btn: "安装 Launcher",
@@ -770,6 +842,7 @@
         },
         hi: {
           settings: "सेटिंग्स",
+          hint_open: "खोलने के लिए क्लिक करें", hint_close: "बंद करने के लिए क्लिक करें",
           install_title: "इस डिवाइस में जोड़ें",
           install_hint: "Launcher इंस्टॉल करें ताकि यह अपने आइकन के साथ ऐप की तरह खुले।",
           install_btn: "Launcher इंस्टॉल करें",
@@ -801,6 +874,7 @@
         },
         ar: {
           settings: "الإعدادات",
+          hint_open: "انقر للفتح", hint_close: "انقر للإغلاق",
           install_title: "أضِف إلى هذا الجهاز",
           install_hint: "ثبِّت Launcher ليُفتح كتطبيق له أيقونته الخاصة.",
           install_btn: "تثبيت Launcher",

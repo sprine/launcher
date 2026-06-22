@@ -206,6 +206,9 @@
       .radio-head .label { font-size: 1.2rem; font-weight: 700; }
       .tile-radio iframe { display: block; width: 100%; border: none; }
 
+      /* YouTube reuses the radio tile, but its frame is video — keep a 16:9 shape. */
+      .video-frame { aspect-ratio: 16 / 9; height: auto; }
+
       /* ---------- settings overlay ---------- */
       .overlay {
         position: fixed;
@@ -1115,6 +1118,31 @@
         return null;
       }
 
+      // Returns a YouTube embed src for a video and/or playlist link, or null. Shown as a visible
+      // player (no autoplay) — the listener taps YouTube's own play button.
+      function youTubeEmbedUrl(url) {
+        try {
+          const u = new URL(url);
+          const host = u.hostname.replace(/^www\./, "").toLowerCase();
+          let id = "";
+          let list = (u.searchParams.get("list") || "").replace(/[^A-Za-z0-9_-]/g, "");
+          // YouTube auto-generated mixes/radio (list id starts with "RD", e.g. from "start radio")
+          // can't be embedded — drop the list and fall back to the seed video, which plays fine.
+          if (/^RD/i.test(list)) list = "";
+          if (host === "youtu.be") {
+            id = u.pathname.slice(1).split("/")[0];
+          } else if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
+            if (u.pathname === "/watch") id = u.searchParams.get("v") || "";
+            else { const m = u.pathname.match(/^\/(?:embed|live|shorts|v)\/([^/?#]+)/); if (m) id = m[1]; }
+          } else { return null; }
+          id = id.replace(/[^A-Za-z0-9_-]/g, "");
+          const opts = "playsinline=1";
+          if (id) return "https://www.youtube.com/embed/" + id + "?" + opts + (list ? "&list=" + list : "");
+          if (list) return "https://www.youtube.com/embed/videoseries?" + opts + "&list=" + list;
+          return null;
+        } catch (e) { return null; }
+      }
+
       function displayName(site) {
         if (site.name.trim()) return site.name.trim();
         try { return new URL(normalizeUrl(site.url)).hostname.replace(/^www\./, ""); } catch (e) { return "Website"; }
@@ -1181,31 +1209,40 @@
         live.forEach((site) => {
           const href = normalizeUrl(site.url);
           const name = displayName(site);
-          const embedUrl = iHeartEmbedUrl(href);
 
-          const icon = el("span", { class: "icon" }, []);
-          const fav = faviconUrl(href);
-          if (fav) {
-            const img = el("img", { src: fav, alt: "", loading: "lazy" }, []);
-            img.addEventListener("error", () => { icon.textContent = ""; icon.appendChild(monogram(name)); });
-            icon.appendChild(img);
-          } else {
-            icon.appendChild(monogram(name));
-          }
-
+          // iHeart and YouTube both embed the provider's own player in a radio-style tile; the
+          // listener taps the player's own play button. We don't auto-start it: Firefox blocks a
+          // cross-origin frame from playing unless the tap lands inside the frame itself.
+          const yt = youTubeEmbedUrl(href);
+          const embedUrl = iHeartEmbedUrl(href) || yt;
           if (embedUrl) {
             const radioTile = el("div", { class: "tile-radio" }, []);
-            radioTile.appendChild(el("div", { class: "radio-head" }, [icon, el("span", { class: "label" }, [name])]));
-            const frame = el("iframe", { class: "radio-frame", src: embedUrl, allow: "autoplay", height: "200", frameborder: "0" }, []);
+            radioTile.appendChild(el("div", { class: "radio-head" }, [siteIcon(href, name), el("span", { class: "label" }, [name])]));
+            // YouTube is video, so its frame keeps a 16:9 shape (.video-frame); iHeart is audio (fixed 200).
+            const frame = el("iframe", { class: yt ? "radio-frame video-frame" : "radio-frame", src: embedUrl, allow: "autoplay", height: "200", frameborder: "0" }, []);
             radioTile.appendChild(frame);
             grid.appendChild(radioTile);
           } else {
             const tile = el("a", { class: "tile", href: href, "aria-label": name }, []);
-            tile.appendChild(icon);
+            tile.appendChild(siteIcon(href, name));
             tile.appendChild(el("span", { class: "label" }, [name]));
             grid.appendChild(tile);
           }
         });
+      }
+
+      // The site's real logo (favicon) with a letter monogram as the fallback.
+      function siteIcon(href, name) {
+        const icon = el("span", { class: "icon" }, []);
+        const fav = faviconUrl(href);
+        if (fav) {
+          const img = el("img", { src: fav, alt: "", loading: "lazy" }, []);
+          img.addEventListener("error", () => { icon.textContent = ""; icon.appendChild(monogram(name)); });
+          icon.appendChild(img);
+        } else {
+          icon.appendChild(monogram(name));
+        }
+        return icon;
       }
 
       function monogram(name) {

@@ -52,6 +52,27 @@ Working notes for editing this project. See `README.md` for the product / user-f
 - Inline SVGs in the `ICONS` object, injected by `paintIcons(root)` into any
   `<span class="ic" data-icon="name">`. Add an icon = add to `ICONS` + use the span.
 
+## Embedded media players
+- A site URL can render as an **inline player** — a `.tile-radio` (header with favicon + name, then
+  the provider's iframe) instead of a link tile. `renderGrid()` probes the normalized URL through
+  two detectors and uses the first that matches:
+  - `iHeartEmbedUrl` — iHeart `/live/` station → `?embed=true` iframe (audio; fixed `height=200`).
+  - `youTubeEmbedUrl` — `watch?v=`, `youtu.be/`, `/live|embed|shorts/`, `music.youtube.com`, or a
+    bare `?list=` → an `/embed/…` src; the frame also gets `.video-frame` (16:9 via `aspect-ratio`).
+    It **drops auto-generated mix/radio playlists** (`list` id starting with `RD`, e.g. from "start
+    radio") because YouTube refuses to embed them — falls back to the seed video.
+- **No auto-start — the listener taps the provider's *own* play button inside the iframe.** A
+  custom button + hidden iframe for "audio-only" YouTube was tried and abandoned: Firefox won't let
+  a cross-origin frame play unless the tap lands inside it (it logs `Feature Policy: Skipping
+  unsupported feature name "autoplay"` and ignores `allow="autoplay"`), so nothing ever started.
+  (Spotify was tried too and removed — its embeds only play 30-second previews unless signed in.)
+- **Every player iframe carries `class="radio-frame"`**, which is how power-off silences them:
+  `stopRadios()` stashes the src and swaps to `about:blank` (the only way to stop a cross-origin
+  player), `resumeRadios()` restores it (YouTube reloads paused). **A new player type must use
+  `radio-frame`** or the power button won't stop its audio.
+- YouTube embeds need a real origin: on a `file://` page the player shows "Error 153" (null
+  origin); over `http(s)://` it loads fine.
+
 ## Gotchas
 - **`sw.js` is network-first for navigations:** edits to `index.html` ship on the next load — no
   cache bump needed. Only changes to **icons/manifest** (cache-first assets) require bumping the

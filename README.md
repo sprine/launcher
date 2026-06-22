@@ -22,6 +22,12 @@ family member (e.g. a daughter) for a parent or grandparent.
 - Big **website tiles**, each showing the site's real logo (favicon, fetched from Google's
   favicon service) with a black-on-cream letter monogram as the fallback. Tapping a tile opens
   that site in the same tab; the browser's back button returns to the Launcher.
+- **Music & radio tiles play right on the page.** Paste an **iHeartRadio** live-station or a
+  **YouTube** video/playlist link as a website, and instead of a link the tile becomes an inline
+  player — the listener just taps the player's big play button, no new site to get lost in. The
+  **power button stops both**. (A YouTube *Mix* / "start radio" link — its address contains
+  `list=RD…` — can't be embedded by YouTube, so the tile plays just that one video; use a normal
+  saved playlist whose address has `list=PL…` to play straight through.)
 - A small, cornered **Settings** button (deliberately hard to hit by accident).
 
 ## Settings (the caregiver's panel)

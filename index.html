@@ -1196,7 +1196,7 @@
           if (embedUrl) {
             const radioTile = el("div", { class: "tile-radio" }, []);
             radioTile.appendChild(el("div", { class: "radio-head" }, [icon, el("span", { class: "label" }, [name])]));
-            const frame = el("iframe", { src: embedUrl, allow: "autoplay", height: "200", frameborder: "0" }, []);
+            const frame = el("iframe", { class: "radio-frame", src: embedUrl, allow: "autoplay", height: "200", frameborder: "0" }, []);
             radioTile.appendChild(frame);
             grid.appendChild(radioTile);
           } else {
@@ -1458,13 +1458,47 @@
       });
 
       // ---------------------------------------------------------------- power
+      // The iHeart radio lives in a cross-origin iframe, so the parent can't pause
+      // its audio — the only way to stop it is to unload the iframe. We stash the src
+      // on power-off and restore it on power-on. Stations the user actually started
+      // (engaged) resume playing; powerOn() runs from a tap, so autoplay is permitted.
+      function withAutoplay(url) {
+        try { const u = new URL(url); u.searchParams.set("autoplay", "true"); return u.href; }
+        catch (e) { return url; }
+      }
+      function stopRadios() {
+        document.querySelectorAll(".radio-frame").forEach((f) => {
+          if (f.src && f.src !== "about:blank") {
+            f.dataset.resumeSrc = f.src;
+            f.src = "about:blank"; // unloads the player → audio stops
+          }
+        });
+      }
+      function resumeRadios() {
+        document.querySelectorAll(".radio-frame").forEach((f) => {
+          const src = f.dataset.resumeSrc;
+          if (!src) return;
+          delete f.dataset.resumeSrc;
+          f.src = f.dataset.engaged ? withAutoplay(src) : src;
+        });
+      }
+      // A click inside a cross-origin iframe steals focus to it — our cue that the
+      // user started that radio, so we know to auto-resume it after a power cycle.
+      window.addEventListener("blur", () => {
+        setTimeout(() => {
+          const a = document.activeElement;
+          if (a && a.tagName === "IFRAME" && a.classList.contains("radio-frame")) a.dataset.engaged = "1";
+        }, 0);
+      });
       function powerOff() {
         if (overlay.classList.contains("is-open")) closeSettings();
+        stopRadios();
         document.body.classList.add("is-off");
         document.getElementById("powerBtn").setAttribute("aria-label", "Power on");
       }
       function powerOn() {
         document.body.classList.remove("is-off");
+        resumeRadios();
         document.getElementById("powerBtn").setAttribute("aria-label", "Power off");
       }
       document.getElementById("powerBtn").addEventListener("click", () => {
